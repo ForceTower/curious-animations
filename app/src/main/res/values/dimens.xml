@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Apple's lyrics_line_text_size = 34sp. -->
+    <dimen name="lyrics_line_text_size">34sp</dimen>
+
+    <!-- Per-row TextView padding. Apple's lyrics_text_padding_horiz/_top/_bottom. -->
+    <dimen name="lyrics_text_padding_horiz">12dp</dimen>
+    <dimen name="lyrics_text_padding_top">2dp</dimen>
+    <dimen name="lyrics_text_padding_bottom">10dp</dimen>
+
+    <!-- Vertical gap between lines (Apple's lyrics_line_between_line_spacing). -->
+    <dimen name="lyrics_line_between_line_spacing">32dp</dimen>
+
+    <!-- Outer horizontal margin from screen edge to row container (Apple's
+         lyrics_line_margin_horiz). 20dp + 12dp inner padding = 32dp edge-to-glyph. -->
+    <dimen name="lyrics_line_margin_horiz">20dp</dimen>
+
+    <!-- Ripple corner radius for the row tap highlight. -->
+    <dimen name="lyrics_ripple_corner_radius">16dp</dimen>
+
+    <!-- I0.Z scale endpoints. Apple references these via getResources().getFloat(...). -->
+    <item name="lyrics_line_scale_normal" format="float" type="dimen">0.98</item>
+    <item name="lyrics_line_scale_highlight" format="float" type="dimen">1.0</item>
+
+    <!-- I0.Z alpha endpoints (Apple's player_vibrant_*_alpha). -->
+    <item name="player_vibrant_primary_alpha" format="float" type="dimen">0.94</item>
+    <item name="player_vibrant_tertiary_alpha" format="float" type="dimen">0.18</item>
+</resources>

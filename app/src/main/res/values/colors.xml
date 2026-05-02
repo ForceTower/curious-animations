@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="lyrics_bg">#FF1A0F2E</color>
+    <color name="lyrics_text">#F0FFFFFF</color>
+    <color name="lyrics_text_dim">#2EFFFFFF</color>
+</resources>
