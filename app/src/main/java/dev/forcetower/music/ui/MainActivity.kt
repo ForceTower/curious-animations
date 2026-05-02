@@ -1,5 +1,6 @@
 package dev.forcetower.music.ui
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,28 +17,15 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var adapter: LyricsAdapter
     private lateinit var recyclerView: RecyclerView
+    private var player: MediaPlayer? = null
 
     private val lines: List<LyricLine> by lazy { loadLines() }
 
-    private var playing = false
-    // Current song position
-    private var currentTimeMs = 0L
-    // Song duration
-    private var totalMs = 60000L
-    private var lastTickAtMs = 0L
-
     private val tick = object : Runnable {
         override fun run() {
-            if (!playing) return
-            val now = System.currentTimeMillis()
-            currentTimeMs += (now - lastTickAtMs)
-            lastTickAtMs = now
-            if (currentTimeMs >= totalMs) {
-                currentTimeMs = totalMs
-                pause()
-            }
-            setProgressMs(currentTimeMs)
-            handler.postDelayed(this, 16L)
+            val p = player ?: return
+            setProgressMs(p.currentPosition.toLong())
+            if (p.isPlaying) handler.postDelayed(this, 16L)
         }
     }
 
@@ -50,18 +38,50 @@ class MainActivity : AppCompatActivity() {
         adapter = LyricsAdapter(lines, LyricsStylesheet.appleDefault(this))
         recyclerView.adapter = adapter
 
-        play()
+        startPlayback()
     }
 
-    private fun play() {
-        playing = true
-        lastTickAtMs = System.currentTimeMillis()
-        handler.post(tick)
-    }
-
-    private fun pause() {
-        playing = false
+    override fun onPause() {
+        super.onPause()
+        player?.takeIf { it.isPlaying }?.pause()
         handler.removeCallbacks(tick)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        player?.let { p ->
+            if (!p.isPlaying && p.currentPosition < p.duration) {
+                p.start()
+                handler.post(tick)
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(tick)
+        player?.release()
+        player = null
+    }
+
+    private fun startPlayback() {
+        try {
+            val afd = assets.openFd(SONG_ASSET_AUDIO)
+            player = MediaPlayer().apply {
+                afd.use { setDataSource(it.fileDescriptor, it.startOffset, it.length) }
+                setOnPreparedListener {
+                    it.start()
+                    handler.post(tick)
+                }
+                setOnCompletionListener {
+                    handler.removeCallbacks(tick)
+                    setProgressMs(it.duration.toLong())
+                }
+                prepareAsync()
+            }
+        } catch (e: IOException) {
+            Timber.e(e, "Failed to start playback for $SONG_ASSET_AUDIO")
+        }
     }
 
     private fun setProgressMs(currentTime: Long) {
@@ -77,14 +97,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadLines(): List<LyricLine> {
         return try {
-            TtmlLyrics.fromAsset(this, SONG_ASSET)
+            TtmlLyrics.fromAsset(this, SONG_ASSET_LYRICS)
         } catch (e: IOException) {
-            Timber.e(e, "Failed to load $SONG_ASSET")
+            Timber.e(e, "Failed to load $SONG_ASSET_LYRICS")
             emptyList()
         }
     }
 
     companion object {
-        private const val SONG_ASSET = "believer.json"
+        private const val SONG_ASSET_LYRICS = "twinkle.json"
+        private const val SONG_ASSET_AUDIO = "twinkle.mp3"
     }
 }
